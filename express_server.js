@@ -8,10 +8,10 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
 
-function generateRandomString() {
+const generateRandomString = () => {
 
- return Math.random().toString(36).substring(2, 8)
-}
+  return Math.random().toString(36).substring(2, 8);
+};
 
 
 
@@ -27,12 +27,12 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  // console.log(req.body);  // Log the POST request body to the console
- const shortURL = generateRandomString();
- urlDatabase[shortURL] = req.body.longURL;
+
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
 
 
-  res.redirect(`/urls/${shortURL}`);  
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/urls/new", (req, res) => {
@@ -55,7 +55,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
-})
+});
 
 
 
