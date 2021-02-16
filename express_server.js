@@ -5,6 +5,7 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
 const bodyParser = require("body-parser");
+// const { delete } = require("request-promise-native");
 app.use(bodyParser.urlencoded({extended: true}));
 
 
@@ -30,8 +31,6 @@ app.post("/urls", (req, res) => {
 
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-
-
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -51,6 +50,13 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+app.post("/urls/:shortURL/delete", (req, res) => {
+
+ console.log(req.params);
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls');
+
+});
 
 
 
