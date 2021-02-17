@@ -5,9 +5,10 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser')
 // const { delete } = require("request-promise-native");
 app.use(bodyParser.urlencoded({extended: true}));
-
+app.use(cookieParser())
 
 const generateRandomString = () => {
 
@@ -56,11 +57,23 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 
+app.post("/urls/login", (req, res) => {
+  
+  const username = req.body.username;
+  // console.log(username);
+  let cookie = res.cookie('current user', username);
+  console.log('Cookies: ', cookie.req.body.username)
+  res.redirect('/urls');
+
+
+
+});
+
 
 app.post("/urls/:shortURL/edit", (req, res) => {
   
   const newURL = req.body.longURL;
-  urlDatabase[req.params.shortURL] = newURL;
+  urlDatabase[req.params.shortURL] = newURL; 
  
   res.redirect('/urls');
 
