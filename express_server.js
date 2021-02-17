@@ -10,9 +10,32 @@ const cookieParser = require('cookie-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
+
+//HELPER FUNCTIONS
+
 const generateRandomString = () => {
 
   return Math.random().toString(36).substring(2, 8);
+};
+
+const validateUser = (email, password) => {
+
+  if (!email || !password) {
+    return false;
+  }
+
+  for (const user in users) {
+  
+    if (email === users[user].email || password === users[user].password) {
+      console.log('user exist');
+      return false;
+    }
+
+  }
+
+
+  return true;
+
 };
 
 
@@ -25,14 +48,14 @@ const urlDatabase = {
 
 
 
-const users = { 
+const users = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
  
-}
+};
 
 
 //HOMEPAGE
@@ -115,17 +138,35 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
 
-const id = generateRandomString();
+  const id = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
 
-users[id] = {
-  id: id,
-  email: req.body.email,
-  password: req.body.password
-}
+  const validate = validateUser(email,password);
 
-let cookieID = res.cookie('user_id', id);
+  if (validate) {
 
-res.redirect('/urls');
+    users[id] = {
+      id: id,
+      email: email,
+      password: password
+    };
+
+    let cookieID = res.cookie('user_id', id);
+    res.redirect('/urls');
+
+  } else {
+    res.redirect('/error404');
+  }
+
+});
+
+
+//404 ERROR HANDLER
+
+app.get("/error404", (req, res) => {
+
+  res.render('error404');
 });
 
 
