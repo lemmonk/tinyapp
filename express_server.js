@@ -16,6 +16,7 @@ const generateRandomString = () => {
 };
 
 
+// PSEUDO DATABASE
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -23,22 +24,24 @@ const urlDatabase = {
 };
 
 
+//HOMEPAGE
+
 app.get("/urls", (req, res) => {
   const templateVars = { username: req.cookies["user"],
     urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+
 app.post("/urls", (req, res) => {
 
   const shortURL = generateRandomString();
-
- 
-
-
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
 });
+
+
+//CREATE NEW URL
 
 app.get("/urls/new", (req, res) => {
 
@@ -50,7 +53,7 @@ app.get("/urls/new", (req, res) => {
 
 
 
-
+//SHOW URLS
 
 app.get("/urls/:shortURL", (req, res) => {
  
@@ -61,6 +64,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+
 app.get("/u/:shortURL", (req, res) => {
 
   
@@ -70,17 +74,29 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 
+
+//LOGIN
+
 app.post("/urls/login", (req, res) => {
   
   const username = req.body.username;
-  // console.log(username);
+
   let cookie = res.cookie('user', username);
   console.log('Cookies: ', cookie.req.body.username);
   res.redirect('/urls');
 
-
-
 });
+
+//REGISTER WITH USERNAME & PASSWORD
+
+app.get("/register", (req, res) => {
+
+  console.log("register");
+  res.render('register');
+});
+
+
+//LOGOUT
 
 app.post("/urls/logout", (req, res) => {
 
@@ -89,6 +105,8 @@ app.post("/urls/logout", (req, res) => {
 
 });
 
+
+//EDIT URL
 
 app.post("/urls/:shortURL/edit", (req, res) => {
 
@@ -105,6 +123,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 
 
 
+//DELETE URL
 
 app.post("/urls/:shortURL/delete", (req, res) => {
 
