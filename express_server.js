@@ -9,6 +9,8 @@ const cookieParser = require('cookie-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
+const bcrypt = require('bcryptjs');
+
 
 //HELPER FUNCTIONS
 
@@ -17,46 +19,13 @@ const generateRandomString = () => {
   return Math.random().toString(36).substring(2, 8);
 };
 
-
-
-const validateRegistration = (req, res) => {
-
-  const email = req.body.email;
-  const password = req.body.password;
  
-  if (!email || !password) {
-    return false;
-  }
 
-  for (const user in users) {
+
+
+const validateUser = (email, password) => {
+
   
-    if (email === users[user].email) {
-
-      return false;
-    }
-
-  }
-
-  const id = generateRandomString();
-
-  users[id] = {
-    id: id,
-    email: email,
-    password: password
-  };
-
-  res.cookie('user_id', id);
-
-  return true;
-
-};
-
-
-const validateLogin = (req, res) => {
-
-  const email = req.body.email;
-  const password = req.body.password;
- 
   if (!email || !password) {
     return false;
   }
@@ -64,11 +33,9 @@ const validateLogin = (req, res) => {
 
   for (const user in users) {
 
-    if (email === users[user].email && password === users[user].password) {
-
-      res.cookie('user_id', user);
-      users[user].id = user;
-      return true;
+    if (email === users[user].email) {
+      const id = users[user].id;
+      return id;
     }
 
   }
@@ -243,7 +210,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 
 
-//REGISTER WITH USERNAME & PASSWORD
+//REGISTER USER
 
 app.get("/register", (req, res) => {
 
@@ -253,12 +220,37 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
 
+  const email = req.body.email;
+  const password = req.body.password;
   
-  const validate = validateRegistration(req, res);
+  const validate = validateUser(email, password);
 
-  if (validate) {
+  if (!validate) {
 
-    res.redirect('/urls');
+    const id = generateRandomString();
+
+    bcrypt.genSalt(10, function(err, salt) {
+      if (err) {
+        return res.redirect('/error404');
+      }
+      bcrypt.hash(password, salt, function(err, hash) {
+  
+        if (err) {
+          return res.redirect('/error404');
+        }
+         
+        users[id] = {
+          id: id,
+          email: email,
+          password: hash
+        };
+
+        res.cookie('user_id', id);
+        res.redirect('/urls');
+      });
+    });
+
+   
 
   } else {
     res.redirect('/error404');
@@ -267,8 +259,7 @@ app.post("/register", (req, res) => {
 });
 
 
-//LOGIN
-
+//LOGIN USER
 
 app.get("/login", (req, res) => {
 
@@ -277,14 +268,34 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
   
+  const email = req.body.email;
+  const password = req.body.password;
+ 
 
-  const validate = validateLogin(req, res);
+  const validate = validateUser(email, password);
 
 
   if (validate) {
 
+    const hash = users[validate].password;
+
+    bcrypt.compare(password, hash, function(err, result) {
+      
+      if (err) {
+        return res.redirect('/error403');
+      }
+
+      if (result) {
+        res.cookie('user_id', users[validate].id);
+        // users[validate].id = validate;
+        res.redirect('/urls');
+      } else {
+        res.redirect('/error403');
+      }
+    });
+
     
-    res.redirect('/urls');
+   
 
   } else {
 
