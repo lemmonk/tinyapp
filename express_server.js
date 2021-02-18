@@ -1,13 +1,22 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-
 app.set("view engine", "ejs");
+const helpers = require('./helpers');
 
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+
+
+const  cookieSession = require('cookie-session')
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2', 'key3'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
+
 
 const bcrypt = require('bcryptjs');
 
@@ -23,26 +32,27 @@ const generateRandomString = () => {
 
 
 
-const validateUser = (email, password) => {
+// const validateUser = (email, usersDB) => {
 
   
-  if (!email || !password) {
-    return false;
-  }
+//   if (!email) {
+//     return false;
+//   }
 
 
-  for (const user in users) {
+//   for (const user in usersDB) {
 
-    if (email === users[user].email) {
-      const id = users[user].id;
-      return id;
-    }
+//     if (email === usersDB[user].email) {
+//       const id = usersDB[user].id;
+//       console.log('ID: ',id);
+//       return id;
+//     }
 
-  }
+//   }
 
-  return false;
+//   return false;
 
-};
+// };
 
 
 const urlsForUser = id => {
@@ -65,22 +75,9 @@ const urlsForUser = id => {
 
 
 // PSEUDO DATABASES
-// "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
 
 const urlDatabase = {};
-
-
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
-  },
- 
-};
-
-
+const users = {};
 
 
 
@@ -88,7 +85,8 @@ const users = {
 
 app.get("/urls", (req, res) => {
  
-  const currentUser = users[req.cookies.user_id];
+  // const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
 
   const userUrls = urlsForUser(currentUser);
 
@@ -110,7 +108,7 @@ app.post("/urls", (req, res) => {
 
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: req.cookies.user_id
+    userID: req.session.user_id
   };
   
 
@@ -122,7 +120,8 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
 
-  const currentUser = users[req.cookies.user_id];
+  // const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
 
   if (currentUser) {
 
@@ -145,34 +144,17 @@ app.get("/urls/new", (req, res) => {
 //SHOW SHORT URL LINK
 
 
-const checkIds = ids => {
-
-  if (!ids.currentUser) {
-    return false;
-  }
-
-  if (ids.currentUser.id === urlDatabase[ids.urlID].userID) {
-    return true;
-  }
-
-  return false;
-};
-
-
 
 app.get("/urls/:shortURL", (req, res) => {
 
-  
+
   const ids = {
-    currentUser: users[req.cookies.user_id],
+    currentUser: users[req.session.user_id],
     urlID: req.params.shortURL,
   };
 
-  const idChx = checkIds(ids);
 
-
-
-  if (idChx) {
+  if (ids.currentUser && ids.currentUser.id === urlDatabase[ids.urlID].userID) {
 
     const templateVars = {
       user: ids.currentUser,
@@ -223,7 +205,7 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   
-  const validate = validateUser(email, password);
+  const validate = helpers.validateUser(email, users);
 
   if (!validate) {
 
@@ -245,7 +227,8 @@ app.post("/register", (req, res) => {
           password: hash
         };
 
-        res.cookie('user_id', id);
+        
+        req.session.user_id = id;
         res.redirect('/urls');
       });
     });
@@ -272,13 +255,13 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
  
 
-  const validate = validateUser(email, password);
+  const validate = helpers.validateUser(email, users);
 
 
   if (validate) {
 
-    const hash = users[validate].password;
-
+    const hash = validate.password;
+    
     bcrypt.compare(password, hash, function(err, result) {
       
       if (err) {
@@ -286,8 +269,8 @@ app.post("/login", (req, res) => {
       }
 
       if (result) {
-        res.cookie('user_id', users[validate].id);
-        // users[validate].id = validate;
+
+        req.session.user_id = validate.id;
         res.redirect('/urls');
       } else {
         res.redirect('/error403');
@@ -312,7 +295,7 @@ app.post("/login", (req, res) => {
 
 app.post("/urls/logout", (req, res) => {
 
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect('/urls');
 
 });
@@ -322,7 +305,8 @@ app.post("/urls/logout", (req, res) => {
 
 app.post("/urls/:shortURL/edit", (req, res) => {
 
-  const currentUser = users[req.cookies.user_id];
+  // const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
 
   if (!currentUser) {
     return res.redirect('/urls');
@@ -331,7 +315,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
  
   urlDatabase[req.params.shortURL] = {
     longURL: req.body.longURL,
-    userID: req.cookies.user_id
+    userID:  req.session.user_id,
   };
  
 
@@ -347,7 +331,8 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
 
-  const currentUser = users[req.cookies.user_id];
+  // const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
 
   if (!currentUser) {
     return res.redirect('/urls');
