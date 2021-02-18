@@ -80,11 +80,10 @@ const validateLogin = (req, res) => {
 
 
 // PSEUDO DATABASES
+// "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
+const urlDatabase = {};
 
 
 
@@ -104,54 +103,75 @@ app.get("/urls", (req, res) => {
  
   const currentUser = users[req.cookies.user_id];
   
-  const templateVars = { user: currentUser,
+  const templateVars = {
+    user: currentUser,
     urls: urlDatabase };
   
   res.render("urls_index", templateVars);
 });
 
 
+//NEW URL
+
 app.post("/urls", (req, res) => {
 
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  // urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL,
+    userID: req.cookies.user_id
+  };
+  console.log('Obj with Id:', urlDatabase);
+
   res.redirect(`/urls/${shortURL}`);
 });
 
 
-//CREATE NEW URL
+
 
 app.get("/urls/new", (req, res) => {
 
   const currentUser = users[req.cookies.user_id];
- 
-  const templateVars = { user: currentUser,
-    urls: urlDatabase };
 
-  res.render("urls_new", templateVars);
+  if (currentUser) {
+
+    const templateVars = {
+      user: currentUser,
+      urls: urlDatabase };
+
+    res.render("urls_new", templateVars);
+
+  } else {
+    res.redirect('/login');
+  }
+
 });
 
 
 
-//SHOW URLS
+//SHOW SHORT URL LINK
 
 app.get("/urls/:shortURL", (req, res) => {
 
   const currentUser = users[req.cookies.user_id];
  
-  const templateVars = {user: currentUser,
-    shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const templateVars = {
+    user: currentUser,
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL].longURL
+  };
+
   urlDatabase[templateVars];
 
   res.render("urls_show", templateVars);
 });
 
 
+//OPEN EXTERNAL LINK FOR LONG URL
+
 app.get("/u/:shortURL", (req, res) => {
 
-  
- 
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
