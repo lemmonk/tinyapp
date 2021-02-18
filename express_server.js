@@ -78,13 +78,30 @@ const validateLogin = (req, res) => {
 };
 
 
+const urlsForUser = id => {
+
+  const userUrls = {};
+
+  for (const uid in urlDatabase) {
+   
+    if (id && urlDatabase[uid].userID === id.id) {
+    
+      userUrls[uid] = urlDatabase[uid];
+    
+    }
+
+  }
+  return userUrls;
+};
+
+
+
 
 // PSEUDO DATABASES
 // "b2xVn2": "http://www.lighthouselabs.ca",
 //   "9sm5xK": "http://www.google.com"
 
 const urlDatabase = {};
-
 
 
 const users = {
@@ -97,15 +114,22 @@ const users = {
 };
 
 
+
+
+
 //HOMEPAGE
 
 app.get("/urls", (req, res) => {
  
   const currentUser = users[req.cookies.user_id];
-  
+
+  const userUrls = urlsForUser(currentUser);
+
+
   const templateVars = {
     user: currentUser,
-    urls: urlDatabase };
+    urls: userUrls
+  };
   
   res.render("urls_index", templateVars);
 });
@@ -116,12 +140,12 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
 
   const shortURL = generateRandomString();
-  // urlDatabase[shortURL] = req.body.longURL;
+
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID: req.cookies.user_id
   };
-  console.log('Obj with Id:', urlDatabase);
+  
 
   res.redirect(`/urls/${shortURL}`);
 });
@@ -149,21 +173,61 @@ app.get("/urls/new", (req, res) => {
 
 
 
+
+
 //SHOW SHORT URL LINK
+
+
+const checkIds = ids => {
+
+  if (!ids.currentUser) {
+    return false;
+  }
+
+  if (ids.currentUser.id === urlDatabase[ids.urlID].userID) {
+    return true;
+  }
+
+  return false;
+};
+
+
 
 app.get("/urls/:shortURL", (req, res) => {
 
-  const currentUser = users[req.cookies.user_id];
- 
-  const templateVars = {
-    user: currentUser,
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL
+  
+  const ids = {
+    currentUser: users[req.cookies.user_id],
+    urlID: req.params.shortURL,
   };
 
-  urlDatabase[templateVars];
+  const idChx = checkIds(ids);
 
-  res.render("urls_show", templateVars);
+
+
+  if (idChx) {
+
+    const templateVars = {
+      user: ids.currentUser,
+      shortURL: ids.urlID,
+      longURL: urlDatabase[ids.urlID].longURL
+    };
+  
+    res.render("urls_show", templateVars);
+  
+  } else {
+
+    const templateVars = {
+      user: null,
+      shortURL: ids.urlID,
+      longURL: urlDatabase[ids.urlID].longURL
+    };
+  
+
+    res.render("urls_show", templateVars);
+  }
+
+  
 });
 
 
@@ -247,11 +311,19 @@ app.post("/urls/logout", (req, res) => {
 
 app.post("/urls/:shortURL/edit", (req, res) => {
 
+  const currentUser = users[req.cookies.user_id];
 
-  
-  const newURL = req.body.longURL;
-  urlDatabase[req.params.shortURL] = newURL;
+  if (!currentUser) {
+    return res.redirect('/urls');
+  }
+
  
+  urlDatabase[req.params.shortURL] = {
+    longURL: req.body.longURL,
+    userID: req.cookies.user_id
+  };
+ 
+
   res.redirect('/urls');
 
 
@@ -264,7 +336,12 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
 
-  console.log(req.params);
+  const currentUser = users[req.cookies.user_id];
+
+  if (!currentUser) {
+    return res.redirect('/urls');
+  }
+
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
 
