@@ -17,52 +17,69 @@ const generateRandomString = () => {
   return Math.random().toString(36).substring(2, 8);
 };
 
-const validateUser = (email, password) => {
 
+
+const validateRegistration = (req, res) => {
+
+  const email = req.body.email;
+  const password = req.body.password;
+ 
   if (!email || !password) {
     return false;
   }
 
   for (const user in users) {
   
-    if (email === users[user].email || password === users[user].password) {
-      console.log('user exist');
+    if (email === users[user].email) {
+
       return false;
     }
 
   }
 
+  const id = generateRandomString();
+
+  users[id] = {
+    id: id,
+    email: email,
+    password: password
+  };
+
+  res.cookie('user_id', id);
 
   return true;
 
 };
 
-const validateLogin = (res, req) => {
+
+const validateLogin = (req, res) => {
 
   const email = req.body.email;
   const password = req.body.password;
-
+ 
   if (!email || !password) {
     return false;
   }
 
+
   for (const user in users) {
-  
-    if (email === users[user].email & password === users[user].password) {
+
+    if (email === users[user].email && password === users[user].password) {
+
+      res.cookie('user_id', user);
       users[user].id = user;
-      let cookieID = res.cookie('user_id', user);
       return true;
     }
 
   }
-
 
   return false;
 
 };
 
 
-// PSEUDO DATABASE
+
+// PSEUDO DATABASES
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -86,7 +103,7 @@ const users = {
 app.get("/urls", (req, res) => {
  
   const currentUser = users[req.cookies.user_id];
-   
+  
   const templateVars = { user: currentUser,
     urls: urlDatabase };
   
@@ -152,21 +169,11 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
 
-  const id = generateRandomString();
-  const email = req.body.email;
-  const password = req.body.password;
-
-  const validate = validateUser(email,password);
+  
+  const validate = validateRegistration(req, res);
 
   if (validate) {
 
-    users[id] = {
-      id: id,
-      email: email,
-      password: password
-    };
-
-    let cookieID = res.cookie('user_id', id);
     res.redirect('/urls');
 
   } else {
@@ -187,7 +194,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   
 
-  const validate = validateLogin(res, req);
+  const validate = validateLogin(req, res);
 
 
   if (validate) {
