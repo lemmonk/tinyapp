@@ -24,6 +24,7 @@
       </thead>
       <tbody>
        
+        <% if (user && user.id){ %>
 
         <% for(let url in urls) { %>
           <tr>
@@ -36,13 +37,13 @@
         
         <% } %>
       
-
+        <% } else { %>
           <tr>
          
             
           </tr>
 
-       
+        <% } %>
        
       </tbody>
     </table>

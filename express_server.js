@@ -6,7 +6,6 @@ app.set("view engine", "ejs");
 
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
-// const { delete } = require("request-promise-native");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
@@ -38,6 +37,30 @@ const validateUser = (email, password) => {
 
 };
 
+const validateLogin = (res, req) => {
+
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!email || !password) {
+    return false;
+  }
+
+  for (const user in users) {
+  
+    if (email === users[user].email & password === users[user].password) {
+      users[user].id = user;
+      let cookieID = res.cookie('user_id', user);
+      return true;
+    }
+
+  }
+
+
+  return false;
+
+};
+
 
 // PSEUDO DATABASE
 
@@ -63,9 +86,10 @@ const users = {
 app.get("/urls", (req, res) => {
  
   const currentUser = users[req.cookies.user_id];
- 
+   
   const templateVars = { user: currentUser,
     urls: urlDatabase };
+  
   res.render("urls_index", templateVars);
 });
 
@@ -116,17 +140,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 
 
-//LOGIN
 
-app.post("/urls/login", (req, res) => {
-  
-  const username = req.body.username;
-
-  let cookie = res.cookie('user', username);
-  console.log('Cookies: ', cookie.req.body.username);
-  res.redirect('/urls');
-
-});
 
 //REGISTER WITH USERNAME & PASSWORD
 
@@ -162,19 +176,41 @@ app.post("/register", (req, res) => {
 });
 
 
-//404 ERROR HANDLER
+//LOGIN
 
-app.get("/error404", (req, res) => {
 
-  res.render('error404');
+app.get("/login", (req, res) => {
+
+  res.render('login');
 });
+
+app.post("/login", (req, res) => {
+  
+
+  const validate = validateLogin(res, req);
+
+
+  if (validate) {
+
+    
+    res.redirect('/urls');
+
+  } else {
+
+    res.redirect('/error403');
+  }
+
+ 
+});
+
+
 
 
 //LOGOUT
 
 app.post("/urls/logout", (req, res) => {
 
-  res.clearCookie('user');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 
 });
@@ -208,9 +244,27 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 
+//ERROR HANDLERS
+
+app.get("/error403", (req, res) => {
+
+  res.render('error403');
+});
+
+
+
+
+app.get("/error404", (req, res) => {
+
+  res.render('error404');
+});
+
+
+
+//LISTENING...
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Tiny App listening on port ${PORT}!`);
 });
 
 

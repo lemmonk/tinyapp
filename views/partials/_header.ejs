@@ -6,13 +6,13 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-      
+        <% if (user && user.id){ %>
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-     
+        <% } %>
       </div>
-      <% console.log(user.id); %>
-      <% if (user.id){ %>
+     
+      <% if (user && user.id){ %>
 
       <div style="margin-right: 0; margin-left:auto;">
       <form class="form-inline" action="/urls/logout" method="POST">
@@ -27,18 +27,21 @@
        
         
        
-        <form class="form-inline" action="/urls/login" method="POST">
+        
   
         <div class="form-group mb-2">
          
-      <input class="form-control" type="text" name="username" placeholder="username" style="width: 300px; margin: 1em">
-        
-      <button type="submit" class="btn btn-primary">Login</button>
+          <form style="display: inline-block;"  action="/register" method="GET">
+      <button style="margin-right: 20px; background-color: transparent; border-width: 2px;" type="submit" class="btn btn-primary">Register</button>
+    </form>
 
+      <form  style="display: inline-block;"  action="/login" method="GET">
+      <button type="submit" class="btn btn-primary">Login</button>
+    </form>
     <% } %>
 
         </div>
-      </form>
+      
      
     </div>
 
