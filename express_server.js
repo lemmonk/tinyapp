@@ -39,7 +39,7 @@ app.get("/", (req, res) => {
 
 
 
-//URL'S PAGE
+//URL'S MAIN PAGE
 
 app.get("/urls", (req, res) => {
  
@@ -72,6 +72,7 @@ app.get("/urls/new", (req, res) => {
     res.render("urls_new", templateVars);
 
   } else {
+
     res.redirect('/login');
   }
 
@@ -94,22 +95,19 @@ app.post("/urls/new", (req, res) => {
 
 
 
-//EDIT URL'S
+//SHORT URL'S
 
 app.get("/urls/:shortURL", (req, res) => {
 
-
-  const ids = {
-    currentUser: users[req.session.userId],
-    urlID: req.params.shortURL,
-  };
+  const currentUser = users[req.session.userId];
+  const urlID = req.params.shortURL;
 
   let templateVars = {
     errMsg: null,
   };
 
 
-  if (!urlDatabase[ids.urlID]) {
+  if (!urlDatabase[urlID]) {
 
     templateVars = {
       user: null,
@@ -120,24 +118,24 @@ app.get("/urls/:shortURL", (req, res) => {
     return res.render('urls_show', templateVars);
   }
 
-  if (!ids.currentUser) {
+  if (!currentUser) {
 
     templateVars = {
       user: null,
-      shortURL: ids.urlID,
-      longURL: urlDatabase[ids.urlID].longURL,
+      shortURL: urlID,
+      longURL: urlDatabase[urlID].longURL,
       errMsg: "You are not logged in 🤨"
     };
     return res.render('urls_show', templateVars);
   }
 
 
-  if (ids.currentUser && ids.currentUser.id !== urlDatabase[ids.urlID].userID) {
+  if (currentUser.id !== urlDatabase[urlID].userID) {
 
     templateVars = {
-      user: ids.currentUser,
-      shortURL: ids.urlID,
-      longURL: urlDatabase[ids.urlID].longURL,
+      user: currentUser,
+      shortURL: urlID,
+      longURL: urlDatabase[urlID].longURL,
       errMsg: "This is not your URL 🤔"
     };
     return res.render('urls_show', templateVars);
@@ -145,13 +143,12 @@ app.get("/urls/:shortURL", (req, res) => {
 
   }
 
+  if (currentUser && currentUser.id === urlDatabase[urlID].userID) {
 
-  if (ids.currentUser && ids.currentUser.id === urlDatabase[ids.urlID].userID) {
-
-    const templateVars = {
-      user: ids.currentUser,
-      shortURL: ids.urlID,
-      longURL: urlDatabase[ids.urlID].longURL,
+    templateVars = {
+      user: currentUser,
+      shortURL: urlID,
+      longURL: urlDatabase[urlID].longURL,
       errMsg: null
     };
   
@@ -162,6 +159,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 
+//EDIT URL'S
 
 app.post("/urls/:shortURL", (req, res) => {
 
@@ -265,6 +263,7 @@ app.get("/register", (req, res) => {
 });
 
 
+
 app.post("/register", (req, res) => {
 
   let templateVars = {};
@@ -286,11 +285,12 @@ app.post("/register", (req, res) => {
 
     const id = helpers.generateRandomString();
     
-
     bcrypt.genSalt(10, function(err, salt) {
+
       if (err) {
         return res.redirect('/error404');
       }
+
       bcrypt.hash(password, salt, function(err, hash) {
   
         if (err) {
@@ -373,8 +373,6 @@ app.post("/login", (req, res) => {
         res.render('errorDynamic', templateVars);
 
       }
-
-
 
     });
 
