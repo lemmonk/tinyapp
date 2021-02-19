@@ -27,7 +27,7 @@ const users = {};
 
 app.get("/", (req, res) => {
  
-  const currentUser = users[req.session.user_id];
+  const currentUser = users[req.session.userId];
   
   if (currentUser) {
     res.redirect("/urls");
@@ -43,7 +43,7 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
  
-  const currentUser = users[req.session.user_id];
+  const currentUser = users[req.session.userId];
   const userUrls = helpers.urlsForUser(currentUser, urlDatabase);
 
 
@@ -60,7 +60,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
 
-  const currentUser = users[req.session.user_id];
+  const currentUser = users[req.session.userId];
 
   if (currentUser) {
 
@@ -85,7 +85,7 @@ app.post("/urls/new", (req, res) => {
 
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: req.session.user_id,
+    userID: req.session.userId,
   };
   
 
@@ -100,7 +100,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 
   const ids = {
-    currentUser: users[req.session.user_id],
+    currentUser: users[req.session.userId],
     urlID: req.params.shortURL,
   };
 
@@ -166,7 +166,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
 
 
-  const currentUser = users[req.session.user_id];
+  const currentUser = users[req.session.userId];
 
   if (!currentUser) {
     return res.redirect('/urls');
@@ -175,7 +175,7 @@ app.post("/urls/:shortURL", (req, res) => {
  
   urlDatabase[req.params.shortURL] = {
     longURL: req.body.longURL,
-    userID:  req.session.user_id,
+    userID:  req.session.userId,
   };
  
 
@@ -218,7 +218,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
 
-  const currentUser = users[req.session.user_id];
+  const currentUser = users[req.session.userId];
 
   let templateVars = {};
 
@@ -255,7 +255,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.get("/register", (req, res) => {
 
-  const currentUser = users[req.session.user_id];
+  const currentUser = users[req.session.userId];
 
   if (currentUser) {
     return res.redirect('/urls');
@@ -285,6 +285,7 @@ app.post("/register", (req, res) => {
   if (!validate) {
 
     const id = helpers.generateRandomString();
+    
 
     bcrypt.genSalt(10, function(err, salt) {
       if (err) {
@@ -304,6 +305,7 @@ app.post("/register", (req, res) => {
 
         
         req.session.userId = id;
+       
         res.redirect('/urls');
       });
     });
@@ -326,7 +328,7 @@ app.post("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
 
-  const currentUser = users[req.session.user_id];
+  const currentUser = users[req.session.userId];
 
   if (currentUser) {
     return res.redirect('/urls');
@@ -407,13 +409,7 @@ app.post("/logout", (req, res) => {
 
 
 
-//ERROR HANDLERS
-
-app.get("/error403", (req, res) => {
-
-  res.render('error403');
-});
-
+//ERROR HANDLER
 
 app.get("*", (req, res) => {
 

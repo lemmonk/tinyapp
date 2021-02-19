@@ -1,47 +1,50 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
     <a class="navbar-brand" href="/urls">TinyApp</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-       
+
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        
+
       </div>
-     
+
       <% if (user && user.id){ %>
 
-      <div style="margin-right: 0; margin-left:auto;">
-      <form class="form-inline" action="/logout" method="POST">
+        <div style="margin-right: 0; margin-left:auto;">
+          <form class="form-inline" action="/logout" method="POST">
 
-      <h5 style="color:white; padding: 20px;">Hello, <%= user.email %> </h5>
-      <button type="submit" class="btn btn-primary">Logout</button>
-      </form>
+            <h5 style="color:white; padding: 20px;">Hello, <%= user.email %>
+            </h5>
+            <button type="submit" class="btn btn-primary">Logout</button>
+          </form>
 
-    <% } else { %>
-        
-      <div style="margin-right: 0; margin-left:auto;">
-       
-        
-        <div class="form-group mb-2">
-         
-          <form style="display: inline-block;"  action="/register" method="GET">
-      <button style="margin-right: 20px; background-color: transparent; border-width: 2px;" type="submit" class="btn btn-primary">Register</button>
-    </form>
+          <% } else { %>
 
-      <form  style="display: inline-block;"  action="/login" method="GET">
-      <button type="submit" class="btn btn-primary">Login</button>
-    </form>
-    <% } %>
+            <div style="margin-right: 0; margin-left:auto;">
+
+
+              <div class="form-group mb-2">
+
+                <form style="display: inline-block;" action="/register" method="GET">
+                  <button style="margin-right: 20px; background-color: transparent; border-width: 2px;" type="submit"
+                    class="btn btn-primary">Register</button>
+                </form>
+
+                <form style="display: inline-block;" action="/login" method="GET">
+                  <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+                <% } %>
+
+              </div>
+
+
+            </div>
 
         </div>
-      
-     
-    </div>
-
-    </div>
   </nav>
 </header>
