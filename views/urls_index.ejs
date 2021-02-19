@@ -32,8 +32,10 @@
          
             <td> <a href='<%= urls[url].longURL  %>'><%= url %></a> </td>
             <td><%= urls[url].longURL %></td>
-            <td><a href='/urls/<%= url %>'>edit</a></td>
-            <td><form method="POST" action="/urls/<%= url %>/delete"><button style="color: white; background-color: red; border:none" type="submit">Delete</button></form> </td>
+            <!-- <td><a href='/urls/<%= url %>'>edit</a></td> -->
+            <td><form method="GET" action="/urls/<%= url %>"><button style="cursor: pointer; color: white; background-color: #007bff; border:none;  border-radius: 5px;"  type="submit">Edit</button></form> </td>
+
+            <td><form method="POST" action="/urls/<%= url %>/delete"><button style="cursor: pointer; color: white; background-color: red; border:none;  border-radius: 5px;"  type="submit">Delete</button></form> </td>
           </tr>
         
         <% } %>

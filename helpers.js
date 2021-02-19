@@ -23,4 +23,30 @@ const validateUser = (email, usersDB) => {
 
 };
 
-module.exports = {validateUser};
+const generateRandomString = () => {
+
+  return Math.random().toString(36).substring(2, 8);
+};
+
+ 
+const urlsForUser = (id, urlDB) => {
+
+  const userUrls = {};
+
+  for (const uid in urlDB) {
+   
+    if (id && urlDB[uid].userID === id.id) {
+    
+      userUrls[uid] = urlDB[uid];
+    
+    }
+
+  }
+  return userUrls;
+};
+
+module.exports = {
+  validateUser,
+  generateRandomString,
+  urlsForUser,
+};
